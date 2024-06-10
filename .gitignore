@@ -1,0 +1,46 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of the build process
+/build
+/dist
+json-transform
+
+# Dependency directories (remove the comment below if you use dep)
+# vendor/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# GoLand project files
+.idea/
+
+# VS Code project files
+.vscode/
+
+# Log files
+*.log
+
+# Temporary files
+*.swp
+*.tmp
+*.bak
+*.old
+*.orig
+
+# Go module files
+go.sum
+
+# Config files
+config.yaml
+
+# Ignore testdata output
+/testdata/output.json
+/testdata/chunk_*.json

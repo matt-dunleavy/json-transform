@@ -327,7 +327,48 @@ Analyze the following customer feedback and determine the sentiment (positive, n
 {{input}}
 ```
 
-#### 
+#### ## Project Folder Structure
+
+```
+json-transform/
+├── cmd/
+│   ├── root.go
+│   ├── batch.go
+│   ├── transform.go
+│   ├── validate.go
+├── config/
+│   ├── config.go
+├── internal/
+│   ├── batch/
+│   │   ├── processor.go
+│   │   └── processor_test.go
+│   ├── transform/
+│   │   ├── transformer.go
+│   │   └── transformer_test.go
+│   ├── validate/
+│   │   ├── validator.go
+│   │   └── validator_test.go
+│   ├── api/
+│   │   ├── api.go
+│   │   └── api_test.go
+│   ├── utils/
+│   │   ├── json.go
+│   │   └── json_test.go
+├── scripts/
+│   ├── run.sh
+│   ├── build.sh
+├── testdata/
+│   ├── sample1.json
+│   ├── sample2.json
+├── Dockerfile
+├── .gitignore
+├── go.mod
+├── go.sum
+├── main.go
+└── README.md
+```
+
+
 
 ## Contributing
 
