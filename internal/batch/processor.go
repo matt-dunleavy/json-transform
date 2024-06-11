@@ -23,7 +23,7 @@ var (
     removeAll       bool
 )
 
-func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat string) error {
+func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat string, logPayload bool) error {
     var prompt []byte
     var err error
 
@@ -81,7 +81,7 @@ func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat strin
 
             var result string
             if operationRequiresPrompt(operation) {
-                result, err = api.ProcessJSONWithAPI(content, string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model)
+                result, err = api.ProcessJSONWithAPI(content, string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model, logPayload)
                 if err != nil {
                     return fmt.Errorf("failed to process file %s: %w", path, err)
                 }

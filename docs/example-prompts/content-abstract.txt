@@ -1,0 +1,11 @@
+Please respond only in the english language. Do not explain what you are doing. Do not self reference. The response you provide is being used as input in a functioning application, so adherance to structure and schema is critical.
+
+Examine the text contents of this JSON file only. Ignore all code, scripting, markup, markdown and formatting.
+
+URL: Provide the value supplied in the "url" field, if any.
+Original Title:  Provide the title to the page, if provided.
+Generative Title:
+
+You are generating the output of a JSON file. 
+
+{{input}}

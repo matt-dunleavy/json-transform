@@ -19,6 +19,7 @@ var (
     removeMarkdown bool
     removeCode    bool
     removeAll     bool
+    logPayload    bool // New flag for logging payload
 )
 
 // batchCmd represents the batch command
@@ -26,7 +27,7 @@ var batchCmd = &cobra.Command{
     Use:   "batch",
     Short: "Batch process JSON files",
     Run: func(cmd *cobra.Command, args []string) {
-        err := batch.ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat)
+        err := batch.ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat, logPayload)
         if err != nil {
             log.Fatalf("Error processing batch: %v", err)
         }
@@ -47,4 +48,5 @@ func init() {
     batchCmd.PersistentFlags().BoolVar(&removeMarkdown, "remove-markdown", false, "Remove Markdown syntax from the JSON body")
     batchCmd.PersistentFlags().BoolVar(&removeCode, "remove-code", false, "Remove all code (inline and blocks) from the JSON body")
     batchCmd.PersistentFlags().BoolVar(&removeAll, "remove-all", false, "Remove all artifacts, leaving only the plain text")
+    batchCmd.PersistentFlags().BoolVar(&logPayload, "log-payload", false, "Log the API request payload")
 }

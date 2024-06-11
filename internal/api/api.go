@@ -7,6 +7,7 @@ import (
     "errors"
     "fmt"
     "io/ioutil"
+    "log"
     "net/http"
 )
 
@@ -30,29 +31,34 @@ type Candidate struct {
     Content Content `json:"content"`
 }
 
-func ProcessJSONWithAPI(input, prompt, apiKey, apiService, model string) (string, error) {
+func ProcessJSONWithAPI(input, prompt, apiKey, apiService, model string, logPayload bool) (string, error) {
     switch apiService {
     case "gemini":
-        return processWithGemini(input, prompt, apiKey, model)
+        return processWithGemini(input, prompt, apiKey, model, logPayload)
     case "chatgpt":
-        return processWithChatGPT(input, prompt, apiKey, model)
+        return processWithChatGPT(input, prompt, apiKey, model, logPayload)
     default:
         return "", errors.New("unsupported API service")
     }
 }
 
-func processWithGemini(input, prompt, apiKey, model string) (string, error) {
+func processWithGemini(input, prompt, apiKey, model string, logPayload bool) (string, error) {
+    combinedInput := fmt.Sprintf("%s\n%s", prompt, input)
     requestBody, err := json.Marshal(APIRequest{
         Contents: []Content{
             {
                 Parts: []Part{
-                    {Text: input},
+                    {Text: combinedInput},
                 },
             },
         },
     })
     if err != nil {
         return "", err
+    }
+
+    if logPayload {
+        log.Printf("Sending request to Gemini with payload: %s", requestBody)
     }
 
     apiURL := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, apiKey)
@@ -72,6 +78,7 @@ func processWithGemini(input, prompt, apiKey, model string) (string, error) {
 
     if resp.StatusCode != http.StatusOK {
         body, _ := ioutil.ReadAll(resp.Body)
+        log.Printf("Gemini API request failed with status: %s, body: %s", resp.Status, string(body))
         return "", fmt.Errorf("API request failed with status: %s, body: %s", resp.Status, string(body))
     }
 
@@ -79,6 +86,10 @@ func processWithGemini(input, prompt, apiKey, model string) (string, error) {
     err = json.NewDecoder(resp.Body).Decode(&apiResponse)
     if err != nil {
         return "", err
+    }
+
+    if logPayload {
+        log.Printf("Received response from Gemini: %v", apiResponse)
     }
 
     if len(apiResponse.Candidates) == 0 {
@@ -92,14 +103,18 @@ func processWithGemini(input, prompt, apiKey, model string) (string, error) {
     return apiResponse.Candidates[0].Content.Parts[0].Text, nil
 }
 
-func processWithChatGPT(input, prompt, apiKey, model string) (string, error) {
+func processWithChatGPT(input, prompt, apiKey, model string, logPayload bool) (string, error) {
+    combinedInput := fmt.Sprintf("%s\n%s", prompt, input)
     requestBody, err := json.Marshal(map[string]interface{}{
-        "prompt": prompt,
-        "input":  input,
+        "prompt": combinedInput,
         "model":  model,
     })
     if err != nil {
         return "", err
+    }
+
+    if logPayload {
+        log.Printf("Sending request to ChatGPT with payload: %s", requestBody)
     }
 
     apiURL := fmt.Sprintf("https://api.openai.com/v1/engines/%s/completions", model)
@@ -121,6 +136,7 @@ func processWithChatGPT(input, prompt, apiKey, model string) (string, error) {
 
     if resp.StatusCode != http.StatusOK {
         body, _ := ioutil.ReadAll(resp.Body)
+        log.Printf("ChatGPT API request failed with status: %s, body: %s", resp.Status, string(body))
         return "", fmt.Errorf("API request failed with status: %s, body: %s", resp.Status, string(body))
     }
 
@@ -128,6 +144,10 @@ func processWithChatGPT(input, prompt, apiKey, model string) (string, error) {
     err = json.NewDecoder(resp.Body).Decode(&apiResponse)
     if err != nil {
         return "", err
+    }
+
+    if logPayload {
+        log.Printf("Received response from ChatGPT: %v", apiResponse)
     }
 
     if len(apiResponse.Candidates) == 0 {
