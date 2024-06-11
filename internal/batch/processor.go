@@ -8,7 +8,9 @@ import (
     "os"
     "path/filepath"
     "strings"
+    "time"
 
+    "github.com/fatih/color"
     "github.com/matt-dunleavy/json-transform/internal/api"
     "github.com/matt-dunleavy/json-transform/internal/strip"
     "github.com/matt-dunleavy/json-transform/config"
@@ -45,16 +47,25 @@ func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat strin
     }
 
     // Process each file in the input directory
-    err = filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
+    files, err := ioutil.ReadDir(inputDir)
+    if err != nil {
+        return fmt.Errorf("failed to read input directory: %w", err)
+    }
 
-        if !info.IsDir() && strings.HasSuffix(info.Name(), ".json") {
-            log.Printf("Processing file: %s", path)
-            input, err := ioutil.ReadFile(path)
+    // Customize log format
+    log.SetFlags(0)
+
+    successColor := color.New(color.FgGreen).SprintFunc()
+    errorColor := color.New(color.FgRed).SprintFunc()
+    infoColor := color.New(color.FgCyan).SprintFunc()
+
+    for _, file := range files {
+        if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
+            log.Printf("Processing file: %s", infoColor(file.Name()))
+            input, err := ioutil.ReadFile(filepath.Join(inputDir, file.Name()))
             if err != nil {
-                return fmt.Errorf("failed to read input file: %w", err)
+                log.Printf("[%s] Failed to read input file: %s", time.Now().Format("2006/01/02 15:04:05"), errorColor(err))
+                continue
             }
 
             // Perform artifact stripping based on flags
@@ -83,28 +94,29 @@ func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat strin
             if operationRequiresPrompt(operation) {
                 result, err = api.ProcessJSONWithAPI(content, string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model, logPayload)
                 if err != nil {
-                    return fmt.Errorf("failed to process file %s: %w", path, err)
+                    log.Printf("[%s] Failed to process file %s: %s", time.Now().Format("2006/01/02 15:04:05"), file.Name(), errorColor(err))
+                    continue
                 }
             } else {
                 result = content
             }
 
             // Determine the output file name and extension
-            outputFileName := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name())) + "." + outputFormat
+            outputFileName := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())) + "." + outputFormat
             outputFile := filepath.Join(outputDir, outputFileName)
 
             // Write the result to the output file
             err = ioutil.WriteFile(outputFile, []byte(result), 0644)
             if err != nil {
-                return fmt.Errorf("failed to write output file: %w", err)
+                log.Printf("[%s] Failed to write output file: %s", time.Now().Format("2006/01/02 15:04:05"), errorColor(err))
+                continue
             }
 
-            log.Printf("Successfully processed file: %s", outputFile)
+            log.Printf("[%s] Successfully processed file: %s", time.Now().Format("2006/01/02 15:04:05"), successColor(outputFile))
         }
-        return nil
-    })
+    }
 
-    return err
+    return nil
 }
 
 func operationRequiresPrompt(operation string) bool {
