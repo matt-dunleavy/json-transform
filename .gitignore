@@ -35,12 +35,11 @@ Thumbs.db
 *.old
 *.orig
 
-# Go module files
-go.sum
-
 # Config files
 config.yaml
 
 # Ignore testdata output
 /testdata/output.json
 /testdata/chunk_*.json
+
+/bin/*

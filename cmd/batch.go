@@ -8,11 +8,17 @@ import (
 )
 
 var (
-    inputDir     string
-    outputDir    string
-    promptFile   string
-    operation    string
-    outputFormat string
+    inputDir      string
+    outputDir     string
+    promptFile    string
+    operation     string
+    outputFormat  string
+    removeStyles  bool
+    removeScripts bool
+    removeMarkup  bool
+    removeMarkdown bool
+    removeCode    bool
+    removeAll     bool
 )
 
 // batchCmd represents the batch command
@@ -32,7 +38,13 @@ func init() {
 
     batchCmd.PersistentFlags().StringVarP(&inputDir, "input", "i", "", "Input directory")
     batchCmd.PersistentFlags().StringVarP(&outputDir, "output", "o", "", "Output directory")
-    batchCmd.PersistentFlags().StringVarP(&promptFile, "prompt", "p", "", "Prompt file")
+    batchCmd.PersistentFlags().StringVarP(&promptFile, "prompt", "p", "", "Prompt file (required for AI operations)")
     batchCmd.PersistentFlags().StringVarP(&operation, "operation", "O", "", "Operation to perform")
-    batchCmd.PersistentFlags().StringVarP(&outputFormat, "output-format", "f", "md", "Output file format (e.g., json, txt, md)")
+    batchCmd.PersistentFlags().StringVarP(&outputFormat, "output-format", "f", "json", "Output file format (e.g., json, txt, md)")
+    batchCmd.PersistentFlags().BoolVar(&removeStyles, "remove-styles", false, "Remove styles (CSS/SCSS/SASS) from the JSON body")
+    batchCmd.PersistentFlags().BoolVar(&removeScripts, "remove-scripts", false, "Remove scripts (JavaScript) from the JSON body")
+    batchCmd.PersistentFlags().BoolVar(&removeMarkup, "remove-markup", false, "Remove HTML/XML markup from the JSON body")
+    batchCmd.PersistentFlags().BoolVar(&removeMarkdown, "remove-markdown", false, "Remove Markdown syntax from the JSON body")
+    batchCmd.PersistentFlags().BoolVar(&removeCode, "remove-code", false, "Remove all code (inline and blocks) from the JSON body")
+    batchCmd.PersistentFlags().BoolVar(&removeAll, "remove-all", false, "Remove all artifacts, leaving only the plain text")
 }

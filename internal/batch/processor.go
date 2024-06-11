@@ -10,14 +10,32 @@ import (
     "strings"
 
     "github.com/matt-dunleavy/json-transform/internal/api"
+    "github.com/matt-dunleavy/json-transform/internal/strip"
     "github.com/matt-dunleavy/json-transform/config"
 )
 
+var (
+    removeStyles    bool
+    removeScripts   bool
+    removeMarkup    bool
+    removeMarkdown  bool
+    removeCode      bool
+    removeAll       bool
+)
+
 func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat string) error {
-    // Read the prompt file
-    prompt, err := ioutil.ReadFile(promptFile)
-    if err != nil {
-        return fmt.Errorf("failed to read prompt file: %w", err)
+    var prompt []byte
+    var err error
+
+    // Read the prompt file if specified and required by the operation
+    if operationRequiresPrompt(operation) {
+        if promptFile == "" {
+            return fmt.Errorf("prompt file is required for operation %s", operation)
+        }
+        prompt, err = ioutil.ReadFile(promptFile)
+        if err != nil {
+            return fmt.Errorf("failed to read prompt file: %w", err)
+        }
     }
 
     // Ensure output directory exists
@@ -39,9 +57,36 @@ func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat strin
                 return fmt.Errorf("failed to read input file: %w", err)
             }
 
-            result, err := api.ProcessJSONWithAPI(string(input), string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model)
-            if err != nil {
-                return fmt.Errorf("failed to process file %s: %w", path, err)
+            // Perform artifact stripping based on flags
+            content := string(input)
+            if removeAll {
+                content = strip.StripAll(content)
+            } else {
+                if removeStyles {
+                    content = strip.StripStyles(content)
+                }
+                if removeScripts {
+                    content = strip.StripScripts(content)
+                }
+                if removeMarkup {
+                    content = strip.StripMarkup(content)
+                }
+                if removeMarkdown {
+                    content = strip.StripMarkdown(content)
+                }
+                if removeCode {
+                    content = strip.StripCode(content)
+                }
+            }
+
+            var result string
+            if operationRequiresPrompt(operation) {
+                result, err = api.ProcessJSONWithAPI(content, string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model)
+                if err != nil {
+                    return fmt.Errorf("failed to process file %s: %w", path, err)
+                }
+            } else {
+                result = content
             }
 
             // Determine the output file name and extension
@@ -60,4 +105,14 @@ func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat strin
     })
 
     return err
+}
+
+func operationRequiresPrompt(operation string) bool {
+    aiOperations := []string{"api-process"} // Add more AI operations if necessary
+    for _, op := range aiOperations {
+        if operation == op {
+            return true
+        }
+    }
+    return false
 }
