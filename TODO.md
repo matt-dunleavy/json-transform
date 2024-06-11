@@ -6,8 +6,17 @@
 -- json to csv
 
 https://github.com/jroimartin/gocui
-https://github.com/guptarohit/asciigraph
-https://github.com/schollz/progressbar
+
+
+json formatter
+json to csv
+json to xml
+json to yaml
+
+json compare
+
+json minify
+json to string
 
 
 

@@ -2,32 +2,55 @@
 package config
 
 import (
-    "fmt"
+    "errors"
     "gopkg.in/yaml.v2"
     "io/ioutil"
     "log"
 )
 
-type Config struct {
-    APIKey          string `yaml:"API_KEY"`
-    APIService      string `yaml:"API_SERVICE"`
-    Model           string `yaml:"MODEL"`
-    GeminiAPIURL    string `yaml:"GEMINI_API_URL"`
-    GoogleProjectID string `yaml:"GOOGLE_PROJECT_ID"`
-}
-
 var Cfg Config
 
-func LoadConfig(configFile string) {
-    data, err := ioutil.ReadFile(configFile)
+type AIService struct {
+    Name   string `yaml:"name"`
+    APIKey string `yaml:"apiKey"`
+    Model  string `yaml:"model"`
+    APIURL string `yaml:"apiURL"`
+}
+
+type Config struct {
+    AIServices      []AIService `yaml:"aiServices"`
+    GoogleProjectID string      `yaml:"googleProjectID"`
+}
+
+func LoadConfig(filePath string) error {
+    data, err := ioutil.ReadFile(filePath)
     if err != nil {
-        log.Fatalf("Error reading config file: %v", err)
+        return err
     }
+
+    // Debug log to show file content
+    log.Printf("Config file content:\n%s\n", data)
 
     err = yaml.Unmarshal(data, &Cfg)
     if err != nil {
-        log.Fatalf("Error parsing config file: %v", err)
+        return err
     }
 
-    fmt.Printf("Loaded config: %+v\n", Cfg)
+    // Debug log to show parsed configuration
+    log.Printf("Parsed config: %+v\n", Cfg)
+    for _, service := range Cfg.AIServices {
+        log.Printf("Service: %+v\n", service)
+    }
+    log.Printf("Google Project ID: %s\n", Cfg.GoogleProjectID)
+
+    return nil
+}
+
+func GetAIServiceByName(name string) (*AIService, error) {
+    for _, service := range Cfg.AIServices {
+        if service.Name == name {
+            return &service, nil
+        }
+    }
+    return nil, errors.New("AI service not found")
 }
