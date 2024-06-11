@@ -85,6 +85,10 @@ func processWithGemini(input, prompt, apiKey, model string) (string, error) {
         return "", errors.New("no candidates in response")
     }
 
+    if len(apiResponse.Candidates[0].Content.Parts) == 0 {
+        return "", errors.New("no parts in content")
+    }
+
     return apiResponse.Candidates[0].Content.Parts[0].Text, nil
 }
 
@@ -124,6 +128,14 @@ func processWithChatGPT(input, prompt, apiKey, model string) (string, error) {
     err = json.NewDecoder(resp.Body).Decode(&apiResponse)
     if err != nil {
         return "", err
+    }
+
+    if len(apiResponse.Candidates) == 0 {
+        return "", errors.New("no candidates in response")
+    }
+
+    if len(apiResponse.Candidates[0].Content.Parts) == 0 {
+        return "", errors.New("no parts in content")
     }
 
     return apiResponse.Candidates[0].Content.Parts[0].Text, nil

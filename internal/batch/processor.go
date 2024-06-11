@@ -5,57 +5,59 @@ import (
     "fmt"
     "io/ioutil"
     "log"
+    "os"
     "path/filepath"
+    "strings"
 
     "github.com/matt-dunleavy/json-transform/internal/api"
+    "github.com/matt-dunleavy/json-transform/config"
 )
 
-// ProcessBatchFiles processes multiple JSON files with a given operation and parameters.
-func ProcessBatchFiles(inputDir, outputDir, apiKey, promptFile, apiService, model, operation string) error {
-    promptContent, err := ioutil.ReadFile(promptFile)
+func ProcessBatch(inputDir, outputDir, promptFile, operation, outputFormat string) error {
+    // Read the prompt file
+    prompt, err := ioutil.ReadFile(promptFile)
     if err != nil {
         return fmt.Errorf("failed to read prompt file: %w", err)
     }
 
-    files, err := ioutil.ReadDir(inputDir)
+    // Ensure output directory exists
+    err = os.MkdirAll(outputDir, os.ModePerm)
     if err != nil {
-        return fmt.Errorf("failed to read input directory: %w", err)
+        return fmt.Errorf("failed to create output directory: %w", err)
     }
 
-    for _, file := range files {
-        if file.IsDir() {
-            continue
-        }
-
-        inputFilePath := filepath.Join(inputDir, file.Name())
-        outputFilePath := filepath.Join(outputDir, file.Name())
-
-        content, err := ioutil.ReadFile(inputFilePath)
+    // Process each file in the input directory
+    err = filepath.Walk(inputDir, func(path string, info os.FileInfo, err error) error {
         if err != nil {
-            log.Printf("Failed to read file %s: %v", inputFilePath, err)
-            continue
+            return err
         }
 
-        var response string
-        switch operation {
-        case "api-process":
-            response, err = api.ProcessJSONWithAPI(string(content), string(promptContent), apiKey, apiService, model)
+        if !info.IsDir() && strings.HasSuffix(info.Name(), ".json") {
+            log.Printf("Processing file: %s", path)
+            input, err := ioutil.ReadFile(path)
             if err != nil {
-                log.Printf("Failed to process file %s: %v", inputFilePath, err)
-                continue
+                return fmt.Errorf("failed to read input file: %w", err)
             }
-        default:
-            return fmt.Errorf("unsupported operation: %s", operation)
+
+            result, err := api.ProcessJSONWithAPI(string(input), string(prompt), config.Cfg.APIKey, config.Cfg.APIService, config.Cfg.Model)
+            if err != nil {
+                return fmt.Errorf("failed to process file %s: %w", path, err)
+            }
+
+            // Determine the output file name and extension
+            outputFileName := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name())) + "." + outputFormat
+            outputFile := filepath.Join(outputDir, outputFileName)
+
+            // Write the result to the output file
+            err = ioutil.WriteFile(outputFile, []byte(result), 0644)
+            if err != nil {
+                return fmt.Errorf("failed to write output file: %w", err)
+            }
+
+            log.Printf("Successfully processed file: %s", outputFile)
         }
+        return nil
+    })
 
-        err = ioutil.WriteFile(outputFilePath, []byte(response), 0644)
-        if err != nil {
-            log.Printf("Failed to write output file %s: %v", outputFilePath, err)
-            continue
-        }
-
-        log.Printf("Processed file %s and saved to %s", inputFilePath, outputFilePath)
-    }
-
-    return nil
+    return err
 }
