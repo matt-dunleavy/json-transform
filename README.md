@@ -10,59 +10,6 @@ json-transform is a microservice and standalone CLI tool for performing AI batch
 
 Ensure you have [Go](https://golang.org/doc/install) installed on your system.
 
-#### Linux
-
-1. **Download the binary:**
-
-   ```sh
-   wget https://github.com/matt-dunleavy/json-transform/releases/download/v1.0.0/json-transform-linux-amd64 -O json-transform
-   ```
-
-2. **Make it executable:**
-
-   ```sh
-   chmod +x json-transform
-   ```
-
-3. **Move it to a directory in your PATH:**
-
-   ```sh
-   sudo mv json-transform /usr/local/bin/
-   ```
-
-#### Windows
-
-1. **Download the binary:**
-   - Go to the [Releases page](https://github.com/matt-dunleavy/json-transform/releases) and download `json-transform-windows-amd64.exe`.
-
-2. **Add the executable to your PATH:**
-   - Move the `json-transform-windows-amd64.exe` to a directory included in your PATH, e.g., `C:\Windows\System32`.
-
-#### MacOS
-
-1. **Download the binary:**
-
-   ```sh
-   curl -L https://github.com/matt-dunleavy/json-transform/releases/download/v1.0.0/json-transform-darwin-amd64 -o json-transform
-   ```
-
-2. **Make it executable:**
-
-   ```sh
-   chmod +x json-transform
-   ```
-
-3. **Move it to a directory in your PATH:**
-
-   ```sh
-   sudo mv json-transform /usr/local/bin/
-   ```
-
-
-
-## Compiling from Source
-
-If you prefer to build the binary from source, follow these steps:
 
 1. **Clone the repository:**
 
