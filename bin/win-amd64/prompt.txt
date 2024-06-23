@@ -1,9 +1,0 @@
-Create: 
-
-1. An abstract of the text contents, no more than 300 words. 
-2. Summarize the text contents 
-3. Make your best attempt at describing the user intent/audience intent of the content of this page.
-4. rovide a description, as detailed as possible, of the best target audience for this content.
-5. If this content were part of a broader course, what would that course cover? Create a course outline.
-
-{{input}}
