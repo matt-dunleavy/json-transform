@@ -2,7 +2,7 @@
 
 # json-transform
 
-json-transform is a microservice and standalone CLI tool for performing AI batch operations on JSON files using OpenAI (Chat GPT) and Google Gemini. This package is part of the Napoleon suite of microservices.
+json-transform is a CLI tool and microservice that allows you to perform automated batch operations on JSON files using OpenAI (ChatGPT), Google Gemini and other AI LLMs.
 
 
 
